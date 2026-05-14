@@ -3,10 +3,8 @@ package dev.gteeri.lootengine.loot;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-/**
- * Represents conditions that must be met for a loot entry to drop.
- * Supports time-of-day, weather, biome, and permission checks.
- */
+import java.util.Map;
+
 public class LootCondition {
 
     private final TimeOfDay timeOfDay;
@@ -21,13 +19,6 @@ public class LootCondition {
         this.minPlayerLevel = minPlayerLevel;
     }
 
-    /**
-     * Checks if all conditions are met for the given player and world.
-     *
-     * @param player the player who killed the mob
-     * @param world  the world where the kill happened
-     * @return true if all conditions pass
-     */
     public boolean check(Player player, World world) {
         if (timeOfDay != null && !checkTime(world)) return false;
         if (weather != null && !checkWeather(world)) return false;
@@ -54,39 +45,29 @@ public class LootCondition {
         };
     }
 
-    /**
-     * Creates a LootCondition from a configuration map.
-     * Returns null if no conditions are specified.
-     */
     @SuppressWarnings("unchecked")
-    public static LootCondition fromMap(java.util.Map<?, ?> map) {
-        if (map == null || !map.containsKey("conditions")) return null;
+    public static LootCondition fromMap(Map<?, ?> map) {
+        if (!map.containsKey("conditions")) return null;
 
-        java.util.Map<?, ?> condMap = (java.util.Map<?, ?>) map.get("conditions");
+        Map<?, ?> condMap = (Map<?, ?>) map.get("conditions");
         if (condMap == null) return null;
 
         TimeOfDay time = TimeOfDay.ANY;
         if (condMap.containsKey("time")) {
-            try {
-                time = TimeOfDay.valueOf(((String) condMap.get("time")).toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            try { time = TimeOfDay.valueOf(((String) condMap.get("time")).toUpperCase()); }
+            catch (IllegalArgumentException ignored) {}
         }
 
         Weather weather = Weather.ANY;
         if (condMap.containsKey("weather")) {
-            try {
-                weather = Weather.valueOf(((String) condMap.get("weather")).toUpperCase());
-            } catch (IllegalArgumentException ignored) {}
+            try { weather = Weather.valueOf(((String) condMap.get("weather")).toUpperCase()); }
+            catch (IllegalArgumentException ignored) {}
         }
 
-        String permission = condMap.containsKey("permission") ? (String) condMap.get("permission") : null;
+        String permission = (String) condMap.get("permission");
+        Integer minLevel = condMap.containsKey("min-level")
+                ? ((Number) condMap.get("min-level")).intValue() : null;
 
-        Integer minLevel = null;
-        if (condMap.containsKey("min-level")) {
-            minLevel = ((Number) condMap.get("min-level")).intValue();
-        }
-
-        // If all defaults, no condition needed
         if (time == TimeOfDay.ANY && weather == Weather.ANY && permission == null && minLevel == null) {
             return null;
         }
@@ -94,11 +75,6 @@ public class LootCondition {
         return new LootCondition(time, weather, permission, minLevel);
     }
 
-    public enum TimeOfDay {
-        DAY, NIGHT, ANY
-    }
-
-    public enum Weather {
-        CLEAR, RAIN, THUNDER, ANY
-    }
+    public enum TimeOfDay { DAY, NIGHT, ANY }
+    public enum Weather { CLEAR, RAIN, THUNDER, ANY }
 }

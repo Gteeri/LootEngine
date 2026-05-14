@@ -4,6 +4,7 @@ import dev.gteeri.lootengine.LootEngine;
 import dev.gteeri.lootengine.gui.LootPreviewGUI;
 import dev.gteeri.lootengine.lang.MessageManager;
 import dev.gteeri.lootengine.loot.LootEntry;
+import dev.gteeri.lootengine.stats.PlayerStats;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,9 +15,6 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Handles the /loot command with subcommands: reload, preview, give, stats.
- */
 public class LootCommand implements CommandExecutor, TabCompleter {
 
     private final LootEngine plugin;
@@ -40,7 +38,10 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         }
 
         switch (args[0].toLowerCase()) {
-            case "reload" -> handleReload(sender, msg);
+            case "reload" -> {
+                plugin.reload();
+                sender.sendMessage(msg.getPrefixed("commands.reload-success"));
+            }
             case "preview" -> handlePreview(sender, args, msg);
             case "give" -> handleGive(sender, args, msg);
             case "stats" -> handleStats(sender, msg);
@@ -48,11 +49,6 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         }
 
         return true;
-    }
-
-    private void handleReload(CommandSender sender, MessageManager msg) {
-        plugin.reload();
-        sender.sendMessage(msg.getPrefixed("commands.reload-success"));
     }
 
     private void handlePreview(CommandSender sender, String[] args, MessageManager msg) {
@@ -66,20 +62,16 @@ public class LootCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String mobName = args[1].toUpperCase();
-        EntityType type;
-        try {
-            type = EntityType.valueOf(mobName);
-        } catch (IllegalArgumentException e) {
-            player.sendMessage(msg.getPrefixed("commands.unknown-mob",
-                    MessageManager.of("mob", args[1])));
+        EntityType type = parseEntityType(args[1]);
+        if (type == null) {
+            player.sendMessage(msg.getPrefixed("commands.unknown-mob", MessageManager.of("mob", args[1])));
             return;
         }
 
         List<LootEntry> entries = plugin.getLootManager().getLootFor(type);
         if (entries.isEmpty()) {
             player.sendMessage(msg.getPrefixed("commands.no-loot-configured",
-                    MessageManager.of("mob", mobName.toLowerCase())));
+                    MessageManager.of("mob", args[1].toLowerCase())));
             return;
         }
 
@@ -97,20 +89,16 @@ public class LootCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        String mobName = args[1].toUpperCase();
-        EntityType type;
-        try {
-            type = EntityType.valueOf(mobName);
-        } catch (IllegalArgumentException e) {
-            player.sendMessage(msg.getPrefixed("commands.unknown-mob",
-                    MessageManager.of("mob", args[1])));
+        EntityType type = parseEntityType(args[1]);
+        if (type == null) {
+            player.sendMessage(msg.getPrefixed("commands.unknown-mob", MessageManager.of("mob", args[1])));
             return;
         }
 
         List<LootEntry> entries = plugin.getLootManager().getLootFor(type);
         if (entries.isEmpty()) {
             player.sendMessage(msg.getPrefixed("commands.no-loot-configured",
-                    MessageManager.of("mob", mobName.toLowerCase())));
+                    MessageManager.of("mob", args[1].toLowerCase())));
             return;
         }
 
@@ -123,8 +111,7 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         }
 
         player.sendMessage(msg.getPrefixed("commands.give-result",
-                MessageManager.of("total", String.valueOf(entries.size()),
-                        "dropped", String.valueOf(dropped))));
+                MessageManager.of("total", String.valueOf(entries.size()), "dropped", String.valueOf(dropped))));
     }
 
     private void handleStats(CommandSender sender, MessageManager msg) {
@@ -133,14 +120,13 @@ public class LootCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // TODO: Implement stats tracking in future version
+        PlayerStats stats = plugin.getStatsManager().getStats(player.getUniqueId());
         player.sendMessage(msg.get("stats.header"));
-        player.sendMessage(msg.get("stats.total-kills",
-                MessageManager.of("kills", "0")));
-        player.sendMessage(msg.get("stats.total-drops",
-                MessageManager.of("drops", "0")));
-        player.sendMessage(msg.get("stats.legendaries",
-                MessageManager.of("count", "0")));
+        player.sendMessage(msg.get("stats.total-kills", MessageManager.of("kills", String.valueOf(stats.getTotalKills()))));
+        player.sendMessage(msg.get("stats.total-drops", MessageManager.of("drops", String.valueOf(stats.getTotalDrops()))));
+        player.sendMessage(msg.get("stats.legendaries", MessageManager.of("count", String.valueOf(stats.getLegendaryDrops()))));
+        player.sendMessage(msg.get("stats.favorite-mob", MessageManager.of(
+                "mob", stats.getFavoriteMob(), "kills", String.valueOf(stats.getKillsForMob(stats.getFavoriteMob())))));
     }
 
     private void sendHelp(CommandSender sender, MessageManager msg) {
@@ -151,23 +137,24 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(msg.get("commands.help-stats"));
     }
 
+    private EntityType parseEntityType(String name) {
+        try { return EntityType.valueOf(name.toUpperCase()); }
+        catch (IllegalArgumentException e) { return null; }
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         List<String> completions = new ArrayList<>();
 
         if (args.length == 1) {
-            completions.add("reload");
-            completions.add("preview");
-            completions.add("give");
-            completions.add("stats");
+            completions.addAll(List.of("reload", "preview", "give", "stats"));
         } else if (args.length == 2 && (args[0].equalsIgnoreCase("preview") || args[0].equalsIgnoreCase("give"))) {
             for (EntityType type : plugin.getLootManager().getConfiguredMobs()) {
                 completions.add(type.name().toLowerCase());
             }
         }
 
-        return completions.stream()
-                .filter(s -> s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()))
-                .toList();
+        String input = args[args.length - 1].toLowerCase();
+        return completions.stream().filter(s -> s.startsWith(input)).toList();
     }
 }

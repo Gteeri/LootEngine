@@ -4,10 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Tracks loot statistics for a single player.
- * Stores kill counts, drop counts, and legendary drop history.
- */
 public class PlayerStats {
 
     private final UUID playerId;
@@ -18,9 +14,6 @@ public class PlayerStats {
 
     public PlayerStats(UUID playerId) {
         this.playerId = playerId;
-        this.totalKills = 0;
-        this.totalDrops = 0;
-        this.legendaryDrops = 0;
         this.killsByMob = new HashMap<>();
     }
 
@@ -29,9 +22,9 @@ public class PlayerStats {
         killsByMob.merge(mobType, 1, Integer::sum);
     }
 
-    public void addDrop(boolean isLegendary) {
+    public void addDrop(boolean legendary) {
         totalDrops++;
-        if (isLegendary) legendaryDrops++;
+        if (legendary) legendaryDrops++;
     }
 
     public UUID getPlayerId() { return playerId; }
@@ -39,11 +32,6 @@ public class PlayerStats {
     public int getTotalDrops() { return totalDrops; }
     public int getLegendaryDrops() { return legendaryDrops; }
 
-    /**
-     * Gets the mob type the player has killed the most.
-     *
-     * @return the most killed mob name, or "None" if no kills
-     */
     public String getFavoriteMob() {
         return killsByMob.entrySet().stream()
                 .max(Map.Entry.comparingByValue())

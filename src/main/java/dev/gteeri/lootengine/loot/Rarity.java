@@ -2,10 +2,6 @@ package dev.gteeri.lootengine.loot;
 
 import org.bukkit.ChatColor;
 
-/**
- * Represents the rarity tier of a loot drop.
- * Each rarity has an associated color for display.
- */
 public enum Rarity {
 
     COMMON(ChatColor.WHITE, "Common"),

@@ -9,9 +9,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Represents a single loot entry with item, chance, rarity and effects.
- */
 public class LootEntry {
 
     private final Material material;
@@ -24,10 +21,12 @@ public class LootEntry {
     private final Map<Enchantment, Integer> enchantments;
     private final boolean hasParticles;
     private final String sound;
+    private final LootCondition condition;
 
     public LootEntry(Material material, double chance, int minAmount, int maxAmount,
                      Rarity rarity, String displayName, List<String> lore,
-                     Map<Enchantment, Integer> enchantments, boolean hasParticles, String sound) {
+                     Map<Enchantment, Integer> enchantments, boolean hasParticles,
+                     String sound, LootCondition condition) {
         this.material = material;
         this.chance = chance;
         this.minAmount = minAmount;
@@ -38,22 +37,13 @@ public class LootEntry {
         this.enchantments = enchantments;
         this.hasParticles = hasParticles;
         this.sound = sound;
+        this.condition = condition;
     }
 
-    /**
-     * Rolls the chance and determines if this entry should drop.
-     *
-     * @return true if the roll succeeds
-     */
     public boolean rollChance() {
         return ThreadLocalRandom.current().nextDouble(100.0) < chance;
     }
 
-    /**
-     * Creates the ItemStack for this loot entry with all configured properties.
-     *
-     * @return the configured ItemStack
-     */
     public ItemStack createItem() {
         int amount = minAmount == maxAmount
                 ? minAmount
@@ -68,11 +58,11 @@ public class LootEntry {
             }
 
             if (lore != null && !lore.isEmpty()) {
-                List<String> coloredLore = new ArrayList<>();
+                List<String> colored = new ArrayList<>();
                 for (String line : lore) {
-                    coloredLore.add(ChatColor.translateAlternateColorCodes('&', line));
+                    colored.add(ChatColor.translateAlternateColorCodes('&', line));
                 }
-                meta.setLore(coloredLore);
+                meta.setLore(colored);
             }
 
             item.setItemMeta(meta);
@@ -93,42 +83,33 @@ public class LootEntry {
     public boolean hasParticles() { return hasParticles; }
     public String getSound() { return sound; }
     public String getDisplayName() { return displayName; }
+    public LootCondition getCondition() { return condition; }
 
-    /**
-     * Parses a LootEntry from a configuration map.
-     *
-     * @param map the configuration map
-     * @return parsed LootEntry or null if invalid
-     */
     @SuppressWarnings("unchecked")
     public static LootEntry fromMap(Map<?, ?> map) {
         try {
-            String itemName = (String) map.get("item");
-            Material material = Material.valueOf(itemName.toUpperCase());
-
+            Material material = Material.valueOf(((String) map.get("item")).toUpperCase());
             double chance = ((Number) map.get("chance")).doubleValue();
 
-            int minAmount = 1;
-            int maxAmount = 1;
+            int minAmount = 1, maxAmount = 1;
             Object amountObj = map.get("amount");
-            if (amountObj instanceof Number) {
-                minAmount = ((Number) amountObj).intValue();
+            if (amountObj instanceof Number num) {
+                minAmount = num.intValue();
                 maxAmount = minAmount;
-            } else if (amountObj instanceof String amountStr) {
-                String[] parts = amountStr.split("-");
+            } else if (amountObj instanceof String str) {
+                String[] parts = str.split("-");
                 minAmount = Integer.parseInt(parts[0]);
                 maxAmount = parts.length > 1 ? Integer.parseInt(parts[1]) : minAmount;
             }
 
             Rarity rarity = Rarity.COMMON;
             if (map.containsKey("rarity")) {
-                try {
-                    rarity = Rarity.valueOf(((String) map.get("rarity")).toUpperCase());
-                } catch (IllegalArgumentException ignored) {}
+                try { rarity = Rarity.valueOf(((String) map.get("rarity")).toUpperCase()); }
+                catch (IllegalArgumentException ignored) {}
             }
 
-            String displayName = map.containsKey("display-name") ? (String) map.get("display-name") : null;
-            List<String> lore = map.containsKey("lore") ? (List<String>) map.get("lore") : null;
+            String displayName = (String) map.get("display-name");
+            List<String> lore = (List<String>) map.get("lore");
 
             Map<Enchantment, Integer> enchantments = new HashMap<>();
             if (map.containsKey("enchantments")) {
@@ -149,8 +130,10 @@ public class LootEntry {
                 sound = (String) effects.get("sound");
             }
 
+            LootCondition condition = LootCondition.fromMap(map);
+
             return new LootEntry(material, chance, minAmount, maxAmount, rarity,
-                    displayName, lore, enchantments, hasParticles, sound);
+                    displayName, lore, enchantments, hasParticles, sound, condition);
         } catch (Exception e) {
             return null;
         }

@@ -9,59 +9,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Manages player statistics persistence.
- * Currently supports YAML storage with future MySQL support planned.
- */
 public class StatsManager {
 
     private final LootEngine plugin;
-    private final Map<UUID, PlayerStats> statsCache = new HashMap<>();
+    private final Map<UUID, PlayerStats> cache = new HashMap<>();
     private final File statsFile;
 
     public StatsManager(LootEngine plugin) {
         this.plugin = plugin;
         this.statsFile = new File(plugin.getDataFolder(), "stats.yml");
-        loadStats();
+        load();
     }
 
-    /**
-     * Gets or creates stats for a player.
-     *
-     * @param playerId the player's UUID
-     * @return the player's stats object
-     */
     public PlayerStats getStats(UUID playerId) {
-        return statsCache.computeIfAbsent(playerId, PlayerStats::new);
+        return cache.computeIfAbsent(playerId, PlayerStats::new);
     }
 
-    /**
-     * Records a kill for a player.
-     *
-     * @param playerId the player's UUID
-     * @param mobType  the type of mob killed
-     */
     public void recordKill(UUID playerId, String mobType) {
         getStats(playerId).addKill(mobType);
     }
 
-    /**
-     * Records a drop for a player.
-     *
-     * @param playerId    the player's UUID
-     * @param isLegendary whether the drop was legendary
-     */
-    public void recordDrop(UUID playerId, boolean isLegendary) {
-        getStats(playerId).addDrop(isLegendary);
+    public void recordDrop(UUID playerId, boolean legendary) {
+        getStats(playerId).addDrop(legendary);
     }
 
-    /**
-     * Saves all stats to disk.
-     */
     public void saveStats() {
         YamlConfiguration config = new YamlConfiguration();
 
-        for (Map.Entry<UUID, PlayerStats> entry : statsCache.entrySet()) {
+        for (Map.Entry<UUID, PlayerStats> entry : cache.entrySet()) {
             String path = entry.getKey().toString();
             PlayerStats stats = entry.getValue();
 
@@ -69,8 +44,8 @@ public class StatsManager {
             config.set(path + ".drops", stats.getTotalDrops());
             config.set(path + ".legendaries", stats.getLegendaryDrops());
 
-            for (Map.Entry<String, Integer> mobEntry : stats.getKillsByMob().entrySet()) {
-                config.set(path + ".mobs." + mobEntry.getKey(), mobEntry.getValue());
+            for (Map.Entry<String, Integer> mob : stats.getKillsByMob().entrySet()) {
+                config.set(path + ".mobs." + mob.getKey(), mob.getValue());
             }
         }
 
@@ -81,10 +56,7 @@ public class StatsManager {
         }
     }
 
-    /**
-     * Loads stats from disk.
-     */
-    private void loadStats() {
+    private void load() {
         if (!statsFile.exists()) return;
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(statsFile);
@@ -98,17 +70,12 @@ public class StatsManager {
                 int drops = config.getInt(uuidStr + ".drops", 0);
                 int legendaries = config.getInt(uuidStr + ".legendaries", 0);
 
-                // Restore counts via reflection-free approach
                 for (int i = 0; i < kills; i++) stats.addKill("unknown");
                 for (int i = 0; i < drops - legendaries; i++) stats.addDrop(false);
                 for (int i = 0; i < legendaries; i++) stats.addDrop(true);
 
-                statsCache.put(uuid, stats);
-            } catch (IllegalArgumentException ignored) {
-                // Skip invalid UUIDs
-            }
+                cache.put(uuid, stats);
+            } catch (IllegalArgumentException ignored) {}
         }
-
-        plugin.getLogger().info("Loaded stats for " + statsCache.size() + " players.");
     }
 }
