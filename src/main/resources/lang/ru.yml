@@ -1,0 +1,35 @@
+# LootEngine - Русский языковой файл
+
+prefix: "&8[&6LootEngine&8] "
+
+commands:
+  reload-success: "&aКонфигурация успешно перезагружена."
+  no-permission: "&cУ вас нет прав для этого действия."
+  player-only: "&cЭта команда доступна только игрокам."
+  unknown-mob: "&cНеизвестный тип моба: &f{mob}"
+  no-loot-configured: "&eДля &f{mob} &eне настроен лут."
+  give-result: "&aПроверено &f{total} &aзаписей, получено &f{dropped} &aпредметов!"
+  help-header: "&6&l=== Команды LootEngine ==="
+  help-reload: "&e/loot reload &8- &7Перезагрузить конфигурацию"
+  help-preview: "&e/loot preview <моб> &8- &7Просмотр таблицы лута"
+  help-give: "&e/loot give <моб> &8- &7Получить лут"
+  help-stats: "&e/loot stats &8- &7Ваша статистика дропа"
+
+gui:
+  preview-title: "&8Таблица лута: &f{mob}"
+  rarity-label: "&7Редкость: {rarity}"
+  chance-label: "&7Шанс: &f{chance}%"
+  amount-label: "&7Количество: &f{min}-{max}"
+  effects-label: "&b✦ Есть эффекты частиц"
+  no-entries: "&7Записи лута не найдены."
+
+drops:
+  broadcast: "&e&l✦ ЛЕГЕНДАРНЫЙ ДРОП &8| &f{player} &7получил {item} &7с &f{mob}"
+  received: "&7Вы получили {item} &7с &f{mob}&7!"
+
+stats:
+  header: "&6&l=== Ваша статистика лута ==="
+  total-kills: "&7Всего убийств: &f{kills}"
+  total-drops: "&7Всего получено предметов: &f{drops}"
+  legendaries: "&7Легендарных дропов: &6{count}"
+  favorite-mob: "&7Самый убиваемый моб: &f{mob} ({kills})"

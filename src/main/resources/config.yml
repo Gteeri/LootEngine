@@ -1,0 +1,92 @@
+# ============================================
+# LootEngine Configuration
+# ============================================
+
+# Language setting (available: en, ru, es, de)
+language: en
+
+# General drop settings
+drops:
+  # Should custom drops replace vanilla drops entirely?
+  replace-vanilla: false
+  # Should items drop naturally (on ground) or go directly to inventory?
+  drop-to-inventory: false
+  # Multiplier for all drop chances (1.0 = normal, 2.0 = double chance)
+  chance-multiplier: 1.0
+  # Maximum number of custom drops per kill
+  max-drops-per-kill: 3
+
+# Rarity settings
+rarities:
+  common:
+    color: "&f"
+    particle: false
+    sound: false
+    broadcast: false
+  uncommon:
+    color: "&a"
+    particle: false
+    sound: false
+    broadcast: false
+  rare:
+    color: "&9"
+    particle: true
+    sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    broadcast: false
+  epic:
+    color: "&5"
+    particle: true
+    sound: ENTITY_PLAYER_LEVELUP
+    broadcast: false
+  legendary:
+    color: "&6&l"
+    particle: true
+    sound: UI_TOAST_CHALLENGE_COMPLETE
+    broadcast: true
+
+# Particle effects configuration
+particles:
+  # Particle type for rare+ drops
+  type: HAPPY_VILLAGER
+  # Number of particles to spawn
+  count: 20
+  # Spread radius
+  spread: 0.5
+
+# Broadcast settings for legendary drops
+broadcast:
+  # Message format. Placeholders: {player}, {item}, {mob}, {rarity}
+  message: "&e&l✦ LEGENDARY DROP &8| &f{player} &7got {item} &7from &f{mob}"
+  # Should the broadcast include a hover tooltip?
+  hover-enabled: true
+  hover-text: "&7Click to congratulate!"
+
+# World settings
+worlds:
+  # Blacklisted worlds where LootEngine won't work
+  blacklist:
+    - "world_lobby"
+    - "world_hub"
+  # Use as whitelist instead? (only listed worlds will work)
+  use-as-whitelist: false
+
+# Permission-based multipliers
+# Players with these permissions get bonus drop chance
+permission-multipliers:
+  "lootengine.vip": 1.5
+  "lootengine.mvp": 2.0
+
+# Database settings (for tracking statistics)
+storage:
+  # Type: yaml, sqlite, mysql
+  type: yaml
+  # MySQL settings (only if type is mysql)
+  mysql:
+    host: localhost
+    port: 3306
+    database: lootengine
+    username: root
+    password: ""
+
+# Debug mode - prints extra info to console
+debug: false

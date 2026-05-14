@@ -1,0 +1,35 @@
+# LootEngine - Archivo de idioma Español
+
+prefix: "&8[&6LootEngine&8] "
+
+commands:
+  reload-success: "&aConfiguración recargada exitosamente."
+  no-permission: "&cNo tienes permiso para hacer eso."
+  player-only: "&cEste comando solo puede ser usado por jugadores."
+  unknown-mob: "&cTipo de mob desconocido: &f{mob}"
+  no-loot-configured: "&eNo hay loot configurado para &f{mob}&e."
+  give-result: "&aSe verificaron &f{total} &aentradas, se obtuvieron &f{dropped} &adrops!"
+  help-header: "&6&l=== Comandos de LootEngine ==="
+  help-reload: "&e/loot reload &8- &7Recargar configuración"
+  help-preview: "&e/loot preview <mob> &8- &7Vista previa de tabla de loot"
+  help-give: "&e/loot give <mob> &8- &7Tirar y dar loot"
+  help-stats: "&e/loot stats &8- &7Ver tus estadísticas de drops"
+
+gui:
+  preview-title: "&8Tabla de Loot: &f{mob}"
+  rarity-label: "&7Rareza: {rarity}"
+  chance-label: "&7Probabilidad: &f{chance}%"
+  amount-label: "&7Cantidad: &f{min}-{max}"
+  effects-label: "&b✦ Tiene efectos de partículas"
+  no-entries: "&7No se encontraron entradas de loot."
+
+drops:
+  broadcast: "&e&l✦ DROP LEGENDARIO &8| &f{player} &7obtuvo {item} &7de &f{mob}"
+  received: "&7Recibiste {item} &7de &f{mob}&7!"
+
+stats:
+  header: "&6&l=== Tus Estadísticas de Loot ==="
+  total-kills: "&7Total de muertes: &f{kills}"
+  total-drops: "&7Total de drops recibidos: &f{drops}"
+  legendaries: "&7Drops legendarios: &6{count}"
+  favorite-mob: "&7Mob más matado: &f{mob} ({kills})"

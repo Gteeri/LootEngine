@@ -10,8 +10,12 @@ Advanced custom loot drop system for Paper 1.21+ Minecraft servers.
 - **Visual effects** — Particles and sounds on rare drops
 - **Legendary broadcasts** — Server-wide announcements for legendary drops
 - **GUI preview** — In-game inventory GUI to browse loot tables
+- **Multi-language** — English, Russian, Spanish, German (easily extendable)
+- **Permission multipliers** — VIP/MVP players get bonus drop chances
+- **World blacklist/whitelist** — Control where loot drops work
 - **Hot reload** — Reload config without restarting the server
 - **Tab completion** — Full tab-complete support for all commands
+- **Extensible config** — Detailed config.yml with all settings documented
 
 ## Commands
 
@@ -20,6 +24,17 @@ Advanced custom loot drop system for Paper 1.21+ Minecraft servers.
 | `/loot reload` | Reload configuration | `lootengine.admin` |
 | `/loot preview <mob>` | Open loot table GUI | `lootengine.admin` |
 | `/loot give <mob>` | Roll and receive loot | `lootengine.admin` |
+| `/loot stats` | View your drop statistics | `lootengine.admin` |
+
+## Multi-Language Support
+
+LootEngine supports multiple languages out of the box. Set your language in `config.yml`:
+
+```yaml
+language: en  # Available: en, ru, es, de
+```
+
+All messages, GUI labels and broadcasts are fully translatable. Add your own language by creating a new file in `plugins/LootEngine/lang/`.
 
 ## Configuration
 

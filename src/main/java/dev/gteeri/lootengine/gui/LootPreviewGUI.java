@@ -1,5 +1,6 @@
 package dev.gteeri.lootengine.gui;
 
+import dev.gteeri.lootengine.lang.MessageManager;
 import dev.gteeri.lootengine.loot.LootEntry;
 import dev.gteeri.lootengine.loot.Rarity;
 import org.bukkit.Bukkit;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 public class LootPreviewGUI {
 
-    private static final int GUI_SIZE = 54; // 6 rows
+    private static final int GUI_SIZE = 54;
 
     /**
      * Opens the loot preview GUI for a player.
@@ -28,9 +29,11 @@ public class LootPreviewGUI {
      * @param player  the player to show the GUI to
      * @param mobType the mob type being previewed
      * @param entries the loot entries to display
+     * @param msg     the message manager for localized strings
      */
-    public static void open(Player player, EntityType mobType, List<LootEntry> entries) {
-        String title = ChatColor.DARK_GRAY + "Loot: " + formatName(mobType.name());
+    public static void open(Player player, EntityType mobType, List<LootEntry> entries, MessageManager msg) {
+        String title = msg.get("gui.preview-title",
+                MessageManager.of("mob", formatName(mobType.name())));
         Inventory gui = Bukkit.createInventory(null, GUI_SIZE, title);
 
         // Fill border with glass panes
@@ -41,23 +44,23 @@ public class LootPreviewGUI {
             }
         }
 
-        // Place loot entries in the middle area
+        // Place loot entries
         int slot = 10;
         for (LootEntry entry : entries) {
-            if (slot >= 44) break; // Don't overflow
+            if (slot >= 44) break;
             if (isBorderSlot(slot)) {
                 slot++;
                 continue;
             }
 
-            gui.setItem(slot, createPreviewItem(entry));
+            gui.setItem(slot, createPreviewItem(entry, msg));
             slot++;
         }
 
         player.openInventory(gui);
     }
 
-    private static ItemStack createPreviewItem(LootEntry entry) {
+    private static ItemStack createPreviewItem(LootEntry entry, MessageManager msg) {
         ItemStack item = new ItemStack(entry.getMaterial());
         ItemMeta meta = item.getItemMeta();
 
@@ -71,11 +74,13 @@ public class LootPreviewGUI {
 
             List<String> lore = new ArrayList<>();
             lore.add("");
-            lore.add(ChatColor.GRAY + "Rarity: " + rarity.getDisplayName());
-            lore.add(ChatColor.GRAY + "Chance: " + ChatColor.WHITE + entry.getChance() + "%");
+            lore.add(msg.get("gui.rarity-label",
+                    MessageManager.of("rarity", rarity.getDisplayName())));
+            lore.add(msg.get("gui.chance-label",
+                    MessageManager.of("chance", String.valueOf(entry.getChance()))));
             lore.add("");
             if (entry.hasParticles()) {
-                lore.add(ChatColor.AQUA + "✦ Has particle effects");
+                lore.add(msg.get("gui.effects-label"));
             }
 
             meta.setLore(lore);

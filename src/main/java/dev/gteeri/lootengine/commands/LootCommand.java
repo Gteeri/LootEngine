@@ -2,8 +2,8 @@ package dev.gteeri.lootengine.commands;
 
 import dev.gteeri.lootengine.LootEngine;
 import dev.gteeri.lootengine.gui.LootPreviewGUI;
+import dev.gteeri.lootengine.lang.MessageManager;
 import dev.gteeri.lootengine.loot.LootEntry;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles the /loot command with subcommands: reload, preview, give.
+ * Handles the /loot command with subcommands: reload, preview, give, stats.
  */
 public class LootCommand implements CommandExecutor, TabCompleter {
 
@@ -27,34 +27,42 @@ public class LootCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        MessageManager msg = plugin.getMessageManager();
+
+        if (!sender.hasPermission("lootengine.admin")) {
+            sender.sendMessage(msg.getPrefixed("commands.no-permission"));
+            return true;
+        }
+
         if (args.length == 0) {
-            sendHelp(sender);
+            sendHelp(sender, msg);
             return true;
         }
 
         switch (args[0].toLowerCase()) {
-            case "reload" -> handleReload(sender);
-            case "preview" -> handlePreview(sender, args);
-            case "give" -> handleGive(sender, args);
-            default -> sendHelp(sender);
+            case "reload" -> handleReload(sender, msg);
+            case "preview" -> handlePreview(sender, args, msg);
+            case "give" -> handleGive(sender, args, msg);
+            case "stats" -> handleStats(sender, msg);
+            default -> sendHelp(sender, msg);
         }
 
         return true;
     }
 
-    private void handleReload(CommandSender sender) {
+    private void handleReload(CommandSender sender, MessageManager msg) {
         plugin.reload();
-        sender.sendMessage(ChatColor.GREEN + "[LootEngine] Configuration reloaded successfully.");
+        sender.sendMessage(msg.getPrefixed("commands.reload-success"));
     }
 
-    private void handlePreview(CommandSender sender, String[] args) {
+    private void handlePreview(CommandSender sender, String[] args, MessageManager msg) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            sender.sendMessage(msg.getPrefixed("commands.player-only"));
             return;
         }
 
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /loot preview <mob>");
+            player.sendMessage(msg.getPrefixed("commands.help-preview"));
             return;
         }
 
@@ -63,27 +71,29 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         try {
             type = EntityType.valueOf(mobName);
         } catch (IllegalArgumentException e) {
-            player.sendMessage(ChatColor.RED + "Unknown mob type: " + args[1]);
+            player.sendMessage(msg.getPrefixed("commands.unknown-mob",
+                    MessageManager.of("mob", args[1])));
             return;
         }
 
         List<LootEntry> entries = plugin.getLootManager().getLootFor(type);
         if (entries.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "No loot configured for " + mobName.toLowerCase());
+            player.sendMessage(msg.getPrefixed("commands.no-loot-configured",
+                    MessageManager.of("mob", mobName.toLowerCase())));
             return;
         }
 
-        LootPreviewGUI.open(player, type, entries);
+        LootPreviewGUI.open(player, type, entries, msg);
     }
 
-    private void handleGive(CommandSender sender, String[] args) {
+    private void handleGive(CommandSender sender, String[] args, MessageManager msg) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            sender.sendMessage(msg.getPrefixed("commands.player-only"));
             return;
         }
 
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "Usage: /loot give <mob>");
+            player.sendMessage(msg.getPrefixed("commands.help-give"));
             return;
         }
 
@@ -92,17 +102,18 @@ public class LootCommand implements CommandExecutor, TabCompleter {
         try {
             type = EntityType.valueOf(mobName);
         } catch (IllegalArgumentException e) {
-            player.sendMessage(ChatColor.RED + "Unknown mob type: " + args[1]);
+            player.sendMessage(msg.getPrefixed("commands.unknown-mob",
+                    MessageManager.of("mob", args[1])));
             return;
         }
 
         List<LootEntry> entries = plugin.getLootManager().getLootFor(type);
         if (entries.isEmpty()) {
-            player.sendMessage(ChatColor.YELLOW + "No loot configured for " + mobName.toLowerCase());
+            player.sendMessage(msg.getPrefixed("commands.no-loot-configured",
+                    MessageManager.of("mob", mobName.toLowerCase())));
             return;
         }
 
-        // Roll all entries and give drops to player
         int dropped = 0;
         for (LootEntry entry : entries) {
             if (entry.rollChance()) {
@@ -111,15 +122,33 @@ public class LootCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        player.sendMessage(ChatColor.GREEN + "[LootEngine] Rolled " + entries.size()
-                + " entries, got " + dropped + " drops!");
+        player.sendMessage(msg.getPrefixed("commands.give-result",
+                MessageManager.of("total", String.valueOf(entries.size()),
+                        "dropped", String.valueOf(dropped))));
     }
 
-    private void sendHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "=== LootEngine Commands ===");
-        sender.sendMessage(ChatColor.YELLOW + "/loot reload " + ChatColor.GRAY + "- Reload configuration");
-        sender.sendMessage(ChatColor.YELLOW + "/loot preview <mob> " + ChatColor.GRAY + "- Preview loot table");
-        sender.sendMessage(ChatColor.YELLOW + "/loot give <mob> " + ChatColor.GRAY + "- Roll and give loot");
+    private void handleStats(CommandSender sender, MessageManager msg) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(msg.getPrefixed("commands.player-only"));
+            return;
+        }
+
+        // TODO: Implement stats tracking in future version
+        player.sendMessage(msg.get("stats.header"));
+        player.sendMessage(msg.get("stats.total-kills",
+                MessageManager.of("kills", "0")));
+        player.sendMessage(msg.get("stats.total-drops",
+                MessageManager.of("drops", "0")));
+        player.sendMessage(msg.get("stats.legendaries",
+                MessageManager.of("count", "0")));
+    }
+
+    private void sendHelp(CommandSender sender, MessageManager msg) {
+        sender.sendMessage(msg.get("commands.help-header"));
+        sender.sendMessage(msg.get("commands.help-reload"));
+        sender.sendMessage(msg.get("commands.help-preview"));
+        sender.sendMessage(msg.get("commands.help-give"));
+        sender.sendMessage(msg.get("commands.help-stats"));
     }
 
     @Override
@@ -130,6 +159,7 @@ public class LootCommand implements CommandExecutor, TabCompleter {
             completions.add("reload");
             completions.add("preview");
             completions.add("give");
+            completions.add("stats");
         } else if (args.length == 2 && (args[0].equalsIgnoreCase("preview") || args[0].equalsIgnoreCase("give"))) {
             for (EntityType type : plugin.getLootManager().getConfiguredMobs()) {
                 completions.add(type.name().toLowerCase());
