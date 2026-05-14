@@ -1,0 +1,92 @@
+# LootEngine - Loot Configuration
+# Define custom drops for each mob type
+
+tables:
+  zombie:
+    - item: DIAMOND
+      chance: 5.0
+      amount: 1
+      rarity: LEGENDARY
+      display-name: "&b&lZombie's Diamond"
+      lore:
+        - "&7Dropped from a zombie"
+        - "&7with a 5% chance"
+      effects:
+        particles: true
+        sound: ENTITY_PLAYER_LEVELUP
+    - item: IRON_INGOT
+      chance: 15.0
+      amount: 1-3
+      rarity: RARE
+      display-name: "&6Rusty Iron"
+      lore:
+        - "&7Found on a fallen zombie"
+    - item: ROTTEN_FLESH
+      chance: 80.0
+      amount: 1-2
+      rarity: COMMON
+
+  skeleton:
+    - item: BOW
+      chance: 8.0
+      amount: 1
+      rarity: EPIC
+      display-name: "&5&lSkeleton's Bow"
+      lore:
+        - "&7A bow infused with dark energy"
+      enchantments:
+        POWER: 2
+        INFINITY: 1
+      effects:
+        particles: true
+        sound: ENTITY_SKELETON_DEATH
+    - item: BONE
+      chance: 60.0
+      amount: 1-3
+      rarity: COMMON
+    - item: ARROW
+      chance: 40.0
+      amount: 2-5
+      rarity: COMMON
+
+  creeper:
+    - item: TNT
+      chance: 10.0
+      amount: 1-2
+      rarity: RARE
+      display-name: "&c&lCreeper's Gift"
+      lore:
+        - "&7Handle with care..."
+      effects:
+        particles: true
+        sound: ENTITY_CREEPER_PRIMED
+    - item: GUNPOWDER
+      chance: 70.0
+      amount: 1-3
+      rarity: COMMON
+
+# Rarity colors used in item names and GUI
+rarities:
+  COMMON:
+    color: "&f"
+    weight: 1
+  UNCOMMON:
+    color: "&a"
+    weight: 2
+  RARE:
+    color: "&9"
+    weight: 3
+  EPIC:
+    color: "&5"
+    weight: 4
+  LEGENDARY:
+    color: "&6"
+    weight: 5
+
+# General settings
+settings:
+  drop-naturally: true
+  replace-vanilla-drops: false
+  particle-effect: VILLAGER_HAPPY
+  broadcast-legendary: true
+  broadcast-message: "&e&l[LOOT] &f{player} &7got &f{item} &7from &f{mob}!"
