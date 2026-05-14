@@ -60,6 +60,9 @@ tables:
       effects:
         particles: true
         sound: ENTITY_CREEPER_PRIMED
+      conditions:
+        time: NIGHT
+        weather: ANY
     - item: GUNPOWDER
       chance: 70.0
       amount: 1-3

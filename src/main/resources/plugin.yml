@@ -3,13 +3,20 @@ version: '${project.version}'
 main: dev.gteeri.lootengine.LootEngine
 api-version: '1.21'
 author: Gteeri
-description: Advanced custom loot drop system with rarities, effects and GUI
+description: Advanced custom loot drop system with rarities, conditions, multi-language and GUI
+website: https://github.com/Gteeri/LootEngine
 commands:
   loot:
     description: Main LootEngine command
-    usage: /<command> [reload|preview|give]
+    usage: /<command> [reload|preview|give|stats]
     permission: lootengine.admin
 permissions:
   lootengine.admin:
     description: Access to all LootEngine commands
     default: op
+  lootengine.vip:
+    description: 1.5x drop chance multiplier
+    default: false
+  lootengine.mvp:
+    description: 2x drop chance multiplier
+    default: false
